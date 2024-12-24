@@ -268,6 +268,7 @@
           init_root_node();
 
           var file_data = decodeURIComponent(escape(window.atob(file_base64_content)));
+          console.log(file_data)
           var mind = null;
           if (is_freemind) {
               mind = convert_freemind_to_jsmind(file_data);
@@ -275,6 +276,7 @@
               mind = jsMind.util.json.string2json(file_data);
           }
 
+          console.log(mind);
           if(!!mind){
               _jm.show(mind);
 
@@ -385,6 +387,51 @@
           }
 
       }
+
+      function add_summary_node() {
+          var selected_node = _jm.get_selected_node();
+          if (!selected_node || selected_node.isroot) return;
+
+          // Get all siblings including selected node
+          var siblings = selected_node.parent.children;
+          var selected_idx = siblings.indexOf(selected_node);
+          if (selected_idx === -1) return;
+
+          // Create summary text from siblings' topics
+          var summary_text = "";
+          for (var i = 0; i <= selected_idx; i++) {
+              if (i > 0) summary_text += ", ";
+              summary_text += siblings[i].topic;
+          }
+          summary_text = "Summary: " + summary_text;
+
+          // Create summary node
+          var nodeid = jsMind.util.uuid.newid();
+          var summary_node = _jm.add_node(selected_node.parent, nodeid, summary_text);
+
+          // Position summary node after the last summarized sibling
+          _jm.move_node(summary_node, nodeid, siblings[selected_idx].id, selected_node.direction);
+
+          // Add visual indicator that this is a summary node
+          _jm.set_node_color(nodeid, "#FFE4B5", "#000000"); // Moccasin background with black text
+      }
+
+      function add_texted_summary_node(text) {
+          var selected_node = _jm.get_selected_node();
+          if (!selected_node || selected_node.isroot) return;
+
+          // Create summary node
+          var nodeid = jsMind.util.uuid.newid();
+          var summary_node = _jm.add_node(selected_node.parent, nodeid, text);
+
+          // Position summary node after selected node
+          _jm.move_node(summary_node, nodeid, selected_node.id, selected_node.direction);
+
+          // Add visual indicator that this is a summary node
+          _jm.set_node_color(nodeid, "#FFE4B5", "#000000"); // Moccasin background with black text
+      }
+
+      open_file("eyJtZXRhIjogeyJuYW1lIjogImpzTWluZCIsICJhdXRob3IiOiAiaGl6emdkZXZAMTYzLmNvbSIsICJ2ZXJzaW9uIjogIjAuNC42In0sICJmb3JtYXQiOiAibm9kZV90cmVlIiwgImRhdGEiOiB7ImlkIjogInJvb3QiLCAidG9waWMiOiBbInRlc3QiXSwgImV4cGFuZGVkIjogdHJ1ZSwgImNoaWxkcmVuIjogW3siaWQiOiAiNjM0NjMwNjM3MDkzOTQzNiIsICJ0b3BpYyI6ICJpbXBvcnQgdGVtcGxhdGUiLCAiZXhwYW5kZWQiOiB0cnVlLCAiZGlyZWN0aW9uIjogInJpZ2h0IiwgImNoaWxkcmVuIjogW3siaWQiOiAiNjM1MzUzODAwNjg0OTMzNyIsICJ0b3BpYyI6ICJjb2RlIiwgImV4cGFuZGVkIjogdHJ1ZSwgImRpcmVjdGlvbiI6ICJyaWdodCIsICJjaGlsZHJlbiI6IFt7ImlkIjogIjY2NTc0ODY3NzQzMDIxMjkiLCAidG9waWMiOiAibWlkZGxlIG5vZGUiLCAiZXhwYW5kZWQiOiB0cnVlLCAiZGlyZWN0aW9uIjogInJpZ2h0IiwgImNoaWxkcmVuIjogW3siaWQiOiAiODk5MDA2MjUxMjk0MjYwNSIsICJ0b3BpYyI6ICJwb3NpdGlvbiIsICJleHBhbmRlZCI6IHRydWUsICJkaXJlY3Rpb24iOiAicmlnaHQiLCAiY2hpbGRyZW4iOiBbeyJpZCI6ICIzMTQwOTQxNjU0NzY3OTkyNSIsICJ0b3BpYyI6ICJzb3J0IG51bWJlciIsICJleHBhbmRlZCI6IHRydWUsICJkaXJlY3Rpb24iOiAicmlnaHQiLCAiY2hpbGRyZW4iOiBbXX1dfSwgeyJpZCI6ICIwOTAzMTMzMzk3NDE1NDQxIiwgInRvcGljIjogImluc3RydW1lbnQiLCAiZXhwYW5kZWQiOiB0cnVlLCAiZGlyZWN0aW9uIjogInJpZ2h0IiwgImNoaWxkcmVuIjogW3siaWQiOiAiMDYzODIzMTc1NzYzNTQ0NDYiLCAidG9waWMiOiAic29ydCBudW1iZXIiLCAiZXhwYW5kZWQiOiB0cnVlLCAiZGlyZWN0aW9uIjogInJpZ2h0IiwgImNoaWxkcmVuIjogW119XX0sIHsiaWQiOiAiNjUyMjE0NzU5NTk4NTE0MyIsICJ0b3BpYyI6ICJjdXN0b20gdGV4dCIsICJleHBhbmRlZCI6IHRydWUsICJkaXJlY3Rpb24iOiAicmlnaHQiLCAiY2hpbGRyZW4iOiBbXX1dfSwgeyJpZCI6ICI3ODE2ODI5NDU0NTM5NDE3IiwgInRvcGljIjogImhvdyB0byBkaXNwbGF5IGlmIGluc3RydW1lbnQgY29kZSBvciBwb3NpdGlvbiBjb2RlIGlzIG5vdCBjb250aW51b3VzPyIsICJleHBhbmRlZCI6IHRydWUsICJkaXJlY3Rpb24iOiAicmlnaHQiLCAiY2hpbGRyZW4iOiBbXX1dfSwgeyJpZCI6ICI5MDAyODAzODEyMjE4MTEiLCAidG9waWMiOiAiaW5zdHJ1bWVudCxwb3NpdGlvbiBtYXRjaCIsICJleHBhbmRlZCI6IHRydWUsICJkaXJlY3Rpb24iOiAicmlnaHQiLCAiY2hpbGRyZW4iOiBbXX0sIHsiaWQiOiAiMDQ5MzE3NjQ0MjU4MTM0NTYiLCAidG9waWMiOiAiaW1hZ2UgcGFzdGUiLCAiZXhwYW5kZWQiOiB0cnVlLCAiZGlyZWN0aW9uIjogInJpZ2h0IiwgImNoaWxkcmVuIjogW119XX0sIHsiaWQiOiAiMTg3ODgxMjg1MzIwMjE3MyIsICJ0b3BpYyI6ICJkYXRhIHNob3ciLCAiZXhwYW5kZWQiOiB0cnVlLCAiZGlyZWN0aW9uIjogInJpZ2h0IiwgImNoaWxkcmVuIjogW119LCB7ImlkIjogIjE4NTczNjIxNzMyODk3NjI3IiwgInRvcGljIjogImRhdGEgZXhwb3J0IiwgImV4cGFuZGVkIjogdHJ1ZSwgImRpcmVjdGlvbiI6ICJsZWZ0IiwgImNoaWxkcmVuIjogW119LCB7ImlkIjogIjQ4OTI1NzUxODk4MzQ2NzAzIiwgInRvcGljIjogImFkZEFuZFVwZGF0ZSIsICJleHBhbmRlZCI6IHRydWUsICJkaXJlY3Rpb24iOiAibGVmdCIsICJjaGlsZHJlbiI6IFtdfV19fQ==");
     </script>
   </body>
 </html>

@@ -1,0 +1,14 @@
+* import template
+** code
+*** middle node
+**** position
+***** sort number
+**** instrument
+***** sort number
+**** custom text
+*** how to display if instrument code or position code is not continuous?
+** instrument,position match
+** image paste
+* data show
+* data export
+* addAndUpdate
